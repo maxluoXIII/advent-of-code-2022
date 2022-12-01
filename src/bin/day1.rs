@@ -1,4 +1,4 @@
-use std::{fs::File, io::{BufReader, BufRead}, vec};
+use std::{fs::File, io::{BufReader, BufRead}, collections::BinaryHeap};
 
 
 fn main() {
@@ -6,17 +6,21 @@ fn main() {
     let reader = BufReader::new(file);
 
     let mut sum = 0;
-    let mut most_cals = 0;
-    // let mut vec = Vec::new();
+    let mut heap = BinaryHeap::new();
     for line in reader.lines() {
         let line = line.unwrap();
         if line != "" {
             sum += line.parse::<u32>().expect("Error parsing number");
         } else {
-            most_cals = most_cals.max(sum);
+            heap.push(sum);
             sum = 0;
         }
     }
 
-    println!("{}", most_cals);
+    let mut top_3 = 0;
+    for _ in 0..3 {
+        top_3 += heap.pop().unwrap_or_default();
+    }
+
+    println!("{}", top_3);
 }
