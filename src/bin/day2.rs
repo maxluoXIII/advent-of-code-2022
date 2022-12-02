@@ -8,7 +8,13 @@ enum RpsChoice {
     Scissors
 }
 
-fn rps_value(play: RpsChoice, opponent: RpsChoice) -> u32 {
+enum RpsResult {
+    Win,
+    Draw,
+    Lose
+}
+
+fn rps_value(play: &RpsChoice, opponent: &RpsChoice) -> u32 {
     match play {
         RpsChoice::Rock => {
             1 + match opponent {
@@ -41,21 +47,32 @@ fn main() {
     let mut score_sum = 0;
     for line in reader.lines() {
         let line = line.unwrap();
-        if let Some((opponent, mine)) = line.split_ascii_whitespace().collect_tuple() {
+        if let Some((opponent, desired_result)) = line.split_ascii_whitespace().collect_tuple() {
             let opponent_choice = match opponent {
                 "A" => Ok(RpsChoice::Rock),
                 "B" => Ok(RpsChoice::Paper),
                 "C" => Ok(RpsChoice::Scissors),
                 _ => Err(SimpleError::new("Could not parse RPS choice"))
             }.unwrap();
-            let my_choice = match mine {
-                "X" => Ok(RpsChoice::Rock),
-                "Y" => Ok(RpsChoice::Paper),
-                "Z" => Ok(RpsChoice::Scissors),
-                _ => Err(SimpleError::new("Could not parse RPS choice"))
+            let desired_result = match desired_result {
+                "X" => Ok(RpsResult::Lose),
+                "Y" => Ok(RpsResult::Draw),
+                "Z" => Ok(RpsResult::Win),
+                _ => Err(SimpleError::new("Could not parse RPS result"))
             }.unwrap();
+            let my_choice = match (&opponent_choice, desired_result) {
+                (RpsChoice::Rock, RpsResult::Win) => RpsChoice::Paper,
+                (RpsChoice::Rock, RpsResult::Draw) => RpsChoice::Rock,
+                (RpsChoice::Rock, RpsResult::Lose) => RpsChoice::Scissors,
+                (RpsChoice::Paper, RpsResult::Win) => RpsChoice::Scissors,
+                (RpsChoice::Paper, RpsResult::Draw) => RpsChoice::Paper,
+                (RpsChoice::Paper, RpsResult::Lose) => RpsChoice::Rock,
+                (RpsChoice::Scissors, RpsResult::Win) => RpsChoice::Rock,
+                (RpsChoice::Scissors, RpsResult::Draw) => RpsChoice::Scissors,
+                (RpsChoice::Scissors, RpsResult::Lose) => RpsChoice::Paper
+            };
 
-            score_sum += rps_value(my_choice, opponent_choice);
+            score_sum += rps_value(&my_choice, &opponent_choice);
         }
     }
 
