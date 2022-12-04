@@ -1,4 +1,4 @@
-use std::{io::{BufReader, BufRead}, fs::File};
+use std::{io::{BufReader, BufRead}, fs::File, collections::HashSet};
 use text_io::scan;
 
 fn main() {
@@ -14,9 +14,9 @@ fn main() {
         let b2: u32;
         scan!(line.bytes() => "{}-{},{}-{}", a1, a2, b1, b2);
 
-        if a1 <= b1 && a2 >= b2 {
-            sum += 1;
-        } else if b1 <= a1 && b2 >= a2 {
+        let assignments1: HashSet<u32> = HashSet::from_iter(a1..=a2);
+        let assignments2: HashSet<u32> = HashSet::from_iter(b1..=b2);
+        if assignments1.intersection(&assignments2).count() != 0 {
             sum += 1;
         }
     }
