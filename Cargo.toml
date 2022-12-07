@@ -9,6 +9,7 @@ edition = "2021"
 itertools = "0.10.5"
 simple-error = "0.2.3"
 text_io = "0.1.12"
+sscanf = "0.4.0"
 
 [[bin]]
 name = "day1"
@@ -21,3 +22,6 @@ name = "day3"
 
 [[bin]]
 name = "day4"
+
+[[bin]]
+name = "day5"
