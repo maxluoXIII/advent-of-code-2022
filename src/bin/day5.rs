@@ -1,12 +1,13 @@
-use std::{fs::File, io::{BufReader, BufRead}, collections::VecDeque};
+use std::{fs::File, io::{BufReader, BufRead}};
 use sscanf::sscanf;
 use itertools::Itertools;
 
 fn move_crates(stacks: &mut Vec<Vec<char>>, dest: usize, source: usize, num: u32) {
+    let mut moving = Vec::new();
     for _ in 0..num {
-        let moving = stacks[source].pop().expect("Tried to move from empty stack");
-        stacks[dest].push(moving);
+        moving.push(stacks[source].pop().expect("Tried to move from empty stack"));
     }
+    stacks[dest].extend(moving.iter().rev());
 }
 
 fn main() {
