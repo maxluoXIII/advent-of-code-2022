@@ -4,7 +4,7 @@ use std::{
     io::{BufReader, Read},
 };
 
-const START_MARKER_LENGTH: usize = 4;
+const START_MARKER_LENGTH: usize = 14;
 
 fn get_start_marker_pos(datastream: Vec<u8>) -> Option<usize> {
     let mut curr = datastream.iter();
@@ -13,7 +13,7 @@ fn get_start_marker_pos(datastream: Vec<u8>) -> Option<usize> {
         let start = curr.clone();
         let set = HashSet::<&u8>::from_iter(start.take(START_MARKER_LENGTH));
         if set.len() == START_MARKER_LENGTH {
-            return Some(pos + 4);
+            return Some(pos + START_MARKER_LENGTH);
         }
 
         if curr.next() == None {
