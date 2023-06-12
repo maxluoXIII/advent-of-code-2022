@@ -134,6 +134,26 @@ impl FileSystem {
 
         sum
     }
+
+    fn find_freeing_dir_size(&self, needed_size: usize, id: InodeId) -> usize {
+        let curr_inode = self.inodes.get(&id).unwrap();
+        let mut res = if curr_inode.size > needed_size {
+            curr_inode.size
+        } else {
+            usize::MAX
+        };
+
+        for child_id in &curr_inode.children {
+            let child_res = self.find_freeing_dir_size(needed_size, *child_id);
+            res = res.min(child_res);
+        }
+
+        res
+    }
+
+    fn get_total_size(&self) -> usize {
+        self.inodes.get(&0).unwrap().size
+    }
 }
 
 enum Command {
@@ -222,5 +242,12 @@ fn main() {
 
     fs.calc_size(0);
     let res = fs.sum_of_small_dirs(100000, 0);
+    println!("{res}");
+    let total_fs_size = 70000000;
+    let update_size = 30000000;
+    let total_free_space = total_fs_size - fs.get_total_size();
+    let needed_space = update_size - total_free_space;
+
+    let res = fs.find_freeing_dir_size(needed_space, 0);
     println!("{res}");
 }
