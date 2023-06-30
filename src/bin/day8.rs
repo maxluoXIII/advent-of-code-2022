@@ -3,6 +3,11 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+use itertools::{
+    FoldWhile::{Continue, Done},
+    Itertools,
+};
+
 fn is_visible(grid: &Vec<Vec<u32>>, pos: (usize, usize)) -> bool {
     let (x, y) = pos;
     let on_border = x == 0 || x == (grid[0].len() - 1) || y == 0 || y == (grid.len() - 1);
@@ -35,6 +40,54 @@ fn count_visible_trees(grid: &Vec<Vec<u32>>) -> usize {
     sum
 }
 
+fn calc_scenic_score(grid: &Vec<Vec<u32>>, pos: (usize, usize)) -> u32 {
+    let (x, y) = pos;
+    let vis_closure = |vis, height: &u32| {
+        if *height < grid[y][x] {
+            Continue(vis + 1)
+        } else {
+            Done(vis + 1)
+        }
+    };
+    let vis_to_left = grid[y][0..x]
+        .iter()
+        .rev()
+        .fold_while(0, vis_closure)
+        .into_inner();
+    let vis_to_right = grid[y][(x+1)..]
+        .iter()
+        .fold_while(0, vis_closure)
+        .into_inner();
+
+    let mut vis_to_up = 0;
+    for test_y in (0..y).rev() {
+        vis_to_up += 1;
+        if grid[test_y][x] >= grid[y][x] {
+            break;
+        }
+    }
+
+    let mut vis_to_down = 0;
+    for test_y in (y+1)..grid.len() {
+        vis_to_down += 1;
+        if grid[test_y][x] >= grid[y][x] {
+            break;
+        }
+    }
+
+    vis_to_left * vis_to_right * vis_to_up * vis_to_down
+}
+
+fn best_scenic_score(grid: &Vec<Vec<u32>>) -> u32 {
+    let row_len = grid[0].len();
+    grid.iter()
+        .flatten()
+        .enumerate()
+        .map(|(idx, _height)| calc_scenic_score(grid, (idx % row_len, idx / row_len)))
+        .max()
+        .unwrap()
+}
+
 fn main() {
     let file = File::open("data/day8-full.txt").expect("Could not find data file");
     let reader = BufReader::new(file);
@@ -48,4 +101,5 @@ fn main() {
     }
 
     println!("Visible trees: {}", count_visible_trees(&grid));
+    println!("Best scenic score: {}", best_scenic_score(&grid));
 }
