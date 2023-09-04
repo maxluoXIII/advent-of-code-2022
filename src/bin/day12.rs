@@ -1,4 +1,7 @@
-use petgraph::{algo::dijkstra, graphmap::DiGraphMap};
+use petgraph::{
+    algo::{dijkstra, floyd_warshall},
+    graphmap::DiGraphMap,
+};
 use std::{
     collections::HashMap,
     fmt::{Debug, Display},
@@ -84,6 +87,23 @@ impl ElevationMap {
         )
     }
 
+    fn calc_shortest_path_from_bottom(&self) -> (Coordinate, u32) {
+        self.data
+            .iter()
+            .filter(|(_, data)| data.elevation == 0)
+            .filter_map(|(coord, _)| {
+                dijkstra(&self.graph, *coord, Some(self.get_end_coord()), |_| 1)
+                    .get_key_value(&self.get_end_coord())
+                    .map(|(coord, dist)| (*coord, *dist))
+            })
+            .min_by(|(_, dist), (_, dist2)| dist.cmp(dist2))
+            .unwrap()
+    }
+
+    fn get_elevation(&self, coord: &Coordinate) -> Option<u32> {
+        self.data.get(coord).map(|data| data.elevation)
+    }
+
     fn get_start_coord(&self) -> Coordinate {
         *self.data.iter().find(|(_, data)| data.is_start).unwrap().0
     }
@@ -166,4 +186,7 @@ fn main() {
         "Distance to end: {}",
         result_map.get(&elev_map.get_end_coord()).unwrap()
     );
+
+    let result = elev_map.calc_shortest_path_from_bottom();
+    println!("Shortest path from bottom: {}: {}", result.0, result.1)
 }
