@@ -96,7 +96,7 @@ fn main() {
         .expect("Could not read file");
 
     let mut monkeys: HashMap<usize, Monkey> = all_monkey_str
-        .split("\r\n\r\n")
+        .split("\n\n")
         .map(Monkey::from)
         .enumerate()
         .collect();
