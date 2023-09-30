@@ -139,8 +139,8 @@ impl PartialEq for ListItem {
             (left_item @ ListItem::Item(_), ListItem::List(right_list)) => {
                 **right_list == List::try_from(left_item).unwrap()
             }
-            (left_item @ ListItem::Item(_), right_item @ ListItem::Item(_)) => {
-                left_item == right_item
+            (ListItem::Item(left_inner), ListItem::Item(right_inner)) => {
+                left_inner == right_inner
             }
         }
     }
@@ -200,14 +200,20 @@ fn main() {
     reader
         .read_to_string(&mut all_list_str)
         .expect("Could not read file");
-    let ordered_index_sum = all_list_str
-        .split("\n\n")
-        .map(ListPair::from)
-        .map(|pair| pair.is_ordered())
-        .enumerate()
-        .filter(|(_, ordered)| *ordered)
-        .map(|(index, _)| index + 1)
-        .sum::<usize>();
+    let mut ordered_packets = all_list_str
+        .lines()
+        .filter(|line| !line.is_empty())
+        .map(List::from)
+        .collect_vec();
 
-    println!("Ordered index sum: {ordered_index_sum}");
+    let divider_start_packet = List::from("[[2]]");
+    let divider_end_packet = List::from("[[6]]");
+    ordered_packets.push(divider_start_packet);
+    ordered_packets.push(divider_end_packet);
+    ordered_packets.sort();
+    let decoder_start = ordered_packets.iter().position(|packet| *packet == List::from("[[2]]")).unwrap() + 1;
+    let decoder_end = ordered_packets.iter().position(|packet| *packet == List::from("[[6]]")).unwrap() + 1;
+
+    let decoder_key = decoder_start * decoder_end;
+    println!("Decoder start ({decoder_start}) x decoder end ({decoder_end}) = {decoder_key}");
 }
